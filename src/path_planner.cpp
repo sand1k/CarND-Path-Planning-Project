@@ -1,8 +1,8 @@
 #include "path_planner.h"
 #include "spline.h"
 
-static int lane =1; // start in lane 1;
-static double ref_vel = 49.5; // reference velocity to target (mph)
+static int lane = 1; // start in lane 1;
+static double ref_vel = 0.0; // reference velocity to target (mph)
 
 void plan_path(double car_x, double car_y,
                double car_s, double car_d,
@@ -15,6 +15,47 @@ void plan_path(double car_x, double car_y,
                vector<double> &next_x_vals, vector<double> &next_y_vals)
 {
   int prev_size = previous_path_x.size();
+
+  if (prev_size > 0)
+  {
+    car_s = end_path_s;
+  }
+
+  bool too_close = false;
+  for (int i = 0; i < sensor_fusion.size(); i++)
+  {
+    float d = sensor_fusion[i][6];
+    if (d < (2 + 4 * lane + 2) && d > (2 + 4 * lane - 2))
+    {
+      double vx = sensor_fusion[i][3];
+      double vy = sensor_fusion[i][4];
+      double check_speed = sqrt(vx * vx + vy * vy);
+      double check_car_s = sensor_fusion[i][5];
+
+      check_car_s += ((double) prev_size * .02 * check_speed);
+      if ((check_car_s > car_s) && ((check_car_s - car_s) < 15))
+      {
+        too_close = true;
+        /*if (lane > 0)
+        {
+          lane = 0;
+        }
+        else {
+          lane = 1;
+        }*/
+        ref_vel = check_speed * 2.24;
+      }
+    }
+  }
+
+  if (too_close)
+  {
+    ref_vel -= .224;
+  }
+  else if (ref_vel < 49.5)
+  {
+    ref_vel += .224;
+  }
 
   vector<double> ptsx;
   vector<double> ptsy;
@@ -50,9 +91,10 @@ void plan_path(double car_x, double car_y,
     ptsy.push_back(ref_y);
   }
 
-  vector<double> next_wp0 = getXY(car_s + 30, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-  vector<double> next_wp1 = getXY(car_s + 60, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-  vector<double> next_wp2 = getXY(car_s + 90, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+  double delta = 20;
+  vector<double> next_wp0 = getXY(car_s + delta, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+  vector<double> next_wp1 = getXY(car_s + 2 * delta, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+  vector<double> next_wp2 = getXY(car_s + 3 * delta, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
 
   ptsx.push_back(next_wp0[0]);
   ptsx.push_back(next_wp1[0]);
@@ -80,7 +122,7 @@ void plan_path(double car_x, double car_y,
     next_y_vals.push_back(previous_path_y[i]);
   }
 
-  double target_x = 30.0;
+  double target_x = 30;
   double target_y = s(target_x);
   double target_dist = sqrt(target_x*target_x + target_y*target_y);
 
