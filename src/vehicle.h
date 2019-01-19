@@ -2,6 +2,8 @@
 #define VEHICLE_H
 
 #include <vector>
+#include <map>
+#include <algorithm>
 using namespace std;
 
 class Vehicle
@@ -16,9 +18,19 @@ public:
       KL
   };
 
-  Vehicle(State state, int lane, double x, double y, double s, double d, double yaw, double speed);
+  typedef map<int, vector<Vehicle>> Predictions;
+  typedef vector<Vehicle> Trajectory;
 
+public:
+
+  Vehicle() {}
+  Vehicle(State state, int lane, double x, double y, double s, double d, double speed);
+
+  Trajectory choose_next_state(const Predictions &predictions);
+  Trajectory generate_predictions(int horizon = 2);
+private:
   vector<State> successor_states();
+  Trajectory generate_trajectory(State state, const Predictions &predictions);
 
 private:
   int lane_;
@@ -27,8 +39,11 @@ private:
   double y_;
   double s_;
   double d_;
-  double yaw_;
   double speed_;
+  double accel_;
 };
+
+float calculate_cost(const Vehicle &vehicle, const Vehicle::Predictions &predictions,
+                     const Vehicle::Trajectory &trajectory);
 
 #endif

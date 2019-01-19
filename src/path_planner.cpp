@@ -16,10 +16,27 @@ void plan_path(double car_x, double car_y,
                const vector<vector<double>> &sensor_fusion,
                vector<double> &next_x_vals, vector<double> &next_y_vals)
 {
+  Vehicle ego_vehicle(state, lane, car_x, car_y, car_s, car_d, car_speed / 2.24);
+
+  Vehicle::Predictions predictions;
+  for (vector<vector<double>>::const_iterator it = sensor_fusion.begin(); it != sensor_fusion.cend(); ++it)
+  {
+    int v_id = static_cast<int>((*it)[0]);
+    double x = (*it)[1];
+    double y = (*it)[2];
+    double vx = (*it)[3];
+    double vy = (*it)[4];
+    double s = (*it)[5];
+    double d = (*it)[6];
+    int lane = (int(d) - 2) / 4;
+
+    Vehicle vehicle(Vehicle::State::KL, lane, x, y, s, d, sqrt(vx * vx + vy * vy));
+    predictions[v_id] = vehicle.generate_predictions();
+  }
+
+  vector<Vehicle> trajectory = ego_vehicle.choose_next_state(predictions);
+
   int prev_size = previous_path_x.size();
-
-  Vehicle vehicle(state, lane, car_x, car_y, car_s, car_d, car_yaw, car_speed);
-
   if (prev_size > 0)
   {
     car_s = end_path_s;
