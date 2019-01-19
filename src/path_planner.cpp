@@ -1,6 +1,8 @@
 #include "path_planner.h"
 #include "spline.h"
+#include "vehicle.h"
 
+static Vehicle::State state = Vehicle::State::KL;
 static int lane = 1; // start in lane 1;
 static double ref_vel = 0.0; // reference velocity to target (mph)
 
@@ -15,6 +17,8 @@ void plan_path(double car_x, double car_y,
                vector<double> &next_x_vals, vector<double> &next_y_vals)
 {
   int prev_size = previous_path_x.size();
+
+  Vehicle vehicle(state, lane, car_x, car_y, car_s, car_d, car_yaw, car_speed);
 
   if (prev_size > 0)
   {
