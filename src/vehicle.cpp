@@ -266,9 +266,9 @@ float calculate_cost(const Vehicle &vehicle, const Vehicle::Predictions &predict
 {
   Vehicle trajectory_last = trajectory[1];
   int final_lane = trajectory_last.get_tgt_lane();
-  float dist = get_dist_to_vehicle(final_lane, vehicle, predictions);
-  printf(" final_lane %d dist %f\n", final_lane, dist);
-  float cost = (2.0 * TARGET_SPEED - trajectory_last.get_v() + abs(final_lane - 1)) / (dist);
+  float dist = get_dist_to_vehicle(final_lane, vehicle, predictions) - abs(final_lane - 1) * 30;
+  dist = (dist < 0.01) ? 0.01 : dist;
+  float cost = (2.0 * TARGET_SPEED - trajectory_last.get_v()) / dist;
 
   printf("%s fin_lane=%d s=%f d=%f lane_spd=%f cost=%f\n", Vehicle::state_names_[trajectory_last.get_state()],
          final_lane, trajectory_last.get_s(), trajectory_last.get_d(), trajectory_last.get_v(), cost);
