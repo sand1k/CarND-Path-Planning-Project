@@ -12,7 +12,7 @@ using namespace std;
 #define TARGET_SPEED 22.1f      // ~ 49.5 mph
 #define PASS_GAP 15.0f
 #define MAX_ACCEL 9.0f
-#define MAX_N_ACCEL 3.0f
+#define MAX_N_ACCEL 2.5f
 
 class Vehicle
 {
