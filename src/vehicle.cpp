@@ -142,7 +142,7 @@ Vehicle::Trajectory Vehicle::lane_change_trajectory(State state, const Predictio
   {
     const Vehicle &next_lane_vehicle = it->second[0];
     if (next_lane_vehicle.lane_ == new_lane
-        && next_lane_vehicle.s_ > s_ - PASS_GAP && next_lane_vehicle.s_ < s_ + PASS_GAP)
+        && next_lane_vehicle.s_ > s_ - PASS_GAP * 0.75 && next_lane_vehicle.s_ < s_ + PASS_GAP)
     {
       //If lane change is not possible, return empty trajectory.
       return trajectory;
@@ -225,7 +225,7 @@ static float get_truncated_dist_to_vehicle(int lane, const Vehicle &vehicle, con
     dist = veh_ahe->get_s() - vehicle.get_s();
   }
 
-  return (dist < OBSERVABLE_DISTANCE) ? dist : FLT_MAX;
+  return (dist < OBSERVABLE_DISTANCE) ? dist : 300;
 }
 
 //
@@ -242,7 +242,7 @@ float calculate_cost(const Vehicle &vehicle, const Vehicle::Predictions &predict
   dist -= abs(final_lane - 1) * MID_LANE_DIST_PRIORITY;
 
   // not to divide by zero
-  dist = (dist < 0.01) ? 0.01 : dist;
+  dist = (dist < 0.00001) ? 0.00001 : dist;
 
   // calculate cost
   return (2.0 * TARGET_SPEED - trajectory_last.get_v()) / dist;

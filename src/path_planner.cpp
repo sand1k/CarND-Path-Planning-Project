@@ -100,9 +100,13 @@ void plan_path(double car_x, double car_y,
   ptsy.push_back(next_wp1[1]);
 
   // Add artificial waypoint to smooth the trjaectory
-  next_wp1 = getXY(new_s + 2 * (new_s - car_s), new_d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
-  ptsx.push_back(next_wp1[0]);
-  ptsy.push_back(next_wp1[1]);
+  if (abs(new_d - car_d) < 0.5)
+  {
+    next_wp1 = getXY(new_s + 2 * (new_s - car_s), new_d,
+                     map_waypoints_s, map_waypoints_x, map_waypoints_y);
+    ptsx.push_back(next_wp1[0]);
+    ptsy.push_back(next_wp1[1]);
+  }
 
   // Convert to local coordinate system
   for (int i = 0; i < ptsx.size(); i++)
